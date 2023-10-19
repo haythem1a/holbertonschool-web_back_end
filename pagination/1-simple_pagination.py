@@ -1,28 +1,60 @@
 #!/usr/bin/env python3
+"""function simple_pagination"""
+import csv
+import math
+from typing import List
+
+
+def index_range(page, page_size):
+    """
+    Return a tuple of start and end indexes for a given page and page size
+    """
+    if page <= 0 or page_size <= 0:
+        raise ValueError("Page and page_size must be positive integers.")
+
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+
+    return start_index, end_index
+
+
+class Server:
+    """ The `Server` class is designed
+    for paginating a dataset from a CSV file"""
+
+    DATA_FILE = "Popular_Baby_Names.csv"
+
+    def __init__(self):
+        self.__dataset = None
+
+    def dataset(self) -> List[List]:
+        """ Retrieves and caches the dataset from
+          the CSV data file, excluding the header row.
 """
-Main file
-"""
+        if self.__dataset is None:
+            with open(self.DATA_FILE) as f:
+                reader = csv.reader(f)
+                dataset = [row for row in reader]
+            self.__dataset = dataset[1:]
 
-Server = __import__('1-simple_pagination').Server
+        return self.__dataset
 
-server = Server()
+    def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
+        """
+        Retrieves a specific page of data from the dataset"""
 
-try:
-    should_err = server.get_page(-10, 2)
-except AssertionError:
-    print("AssertionError raised with negative values")
+        if not isinstance(
+                page,
+                int) or not isinstance(
+                page_size,
+                int) or page <= 0 or page_size <= 0:
+            raise AssertionError(
+                "AssertionError raised with negative values or non-integers")
 
-try:
-    should_err = server.get_page(0, 0)
-except AssertionError:
-    print("AssertionError raised with 0")
+        start_index, end_index = index_range(page, page_size)
+        dataset = self.dataset()
 
-try:
-    should_err = server.get_page(2, 'Bob')
-except AssertionError:
-    print("AssertionError raised when page and/or page_size are not ints")
+        if start_index >= len(dataset):
+            return []
 
-
-print(server.get_page(1, 3))
-print(server.get_page(3, 2))
-print(server.get_page(3000, 100))
+        return dataset[start_index:end_index]
